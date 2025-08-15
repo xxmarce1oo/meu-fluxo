@@ -34,27 +34,23 @@ export async function DELETE(
   return NextResponse.json({ message: "Projeto deletado" }, { status: 200 });
 }
 
-
 export async function PATCH(
   request: Request,
   { params }: { params: { projectId: string } }
 ) {
   const { projectId } = params;
 
-  // 1. Protect the route and get the user
+  // 1. Proteger a rota e pegar o usuário
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.email) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
   const userId = session.user.email;
 
-  // 2. Get the new data from the request body
-  const { name, estimatedHours } = await request.json();
-  if (!name || estimatedHours === undefined) {
-    return NextResponse.json({ error: "Nome e tempo estimado são obrigatórios" }, { status: 400 });
-  }
+  // 2. Pegar os novos dados do corpo da requisição
+  const { name, estimatedHours, details, notes } = await request.json();
 
-  // 3. Security: Verify the project belongs to the user
+  // 3. Segurança: Verificar se o projeto pertence ao usuário
   const project: { userId?: string } | null = await kv.hgetall(
     `project:${projectId}`
   );
@@ -62,13 +58,24 @@ export async function PATCH(
     return NextResponse.json({ error: "Projeto não encontrado ou não pertence a você" }, { status: 404 });
   }
 
-  // 4. Update the project data in the database
-  const hours = Number(estimatedHours);
-  if (isNaN(hours) || hours < 0) {
-      return NextResponse.json({ error: "Tempo estimado deve ser um número positivo" }, { status: 400 });
+  // 4. Montar o objeto de atualização apenas com os campos fornecidos
+  const updateData: Record<string, any> = {};
+  if (name) updateData.name = name;
+  if (estimatedHours !== undefined) {
+      const hours = Number(estimatedHours);
+      if (!isNaN(hours) && hours >= 0) {
+        updateData.estimatedHours = hours;
+      }
+  }
+  if (details !== undefined) updateData.details = details;
+  if (notes !== undefined) updateData.notes = notes;
+
+  if (Object.keys(updateData).length === 0) {
+    return NextResponse.json({ error: "Nenhum dado para atualizar" }, { status: 400 });
   }
 
-  await kv.hset(`project:${projectId}`, { name, estimatedHours: hours });
+  // 5. Atualizar o projeto no banco de dados
+  await kv.hset(`project:${projectId}`, updateData);
 
   return NextResponse.json({ message: "Projeto atualizado com sucesso" }, { status: 200 });
 }

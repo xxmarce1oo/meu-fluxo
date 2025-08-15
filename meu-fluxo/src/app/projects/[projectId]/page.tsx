@@ -4,6 +4,7 @@ import { getProjectById } from "@/lib/project-service";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
 import { authOptions } from "../../api/auth/[...nextauth]/route";
+import ProjectDetailsForm from "@/components/ProjectDetailsForm"; // <-- IMPORTAR
 
 interface ProjectDetailsPageProps {
   params: {
@@ -21,7 +22,6 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
   // Buscar os dados do projeto específico
   const project = await getProjectById(params.projectId);
 
-  // Se o projeto não existir ou não pertencer ao usuário, mostra página 404
   if (!project) {
     notFound();
   }
@@ -36,17 +36,14 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
         </p>
       </div>
 
-      {/* Futuramente, aqui entrarão os outros componentes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-card p-4 rounded-md shadow-sm">
-          <h2 className="text-2xl font-semibold mb-4">Detalhes</h2>
-          <p className="text-muted-foreground">(Em breve: campo para editar os detalhes da atividade)</p>
-        </div>
-        <div className="bg-card p-4 rounded-md shadow-sm">
-          <h2 className="text-2xl font-semibold mb-4">Observações</h2>
-          <p className="text-muted-foreground">(Em breve: campo para editar observações e dificuldades)</p>
-        </div>
-      </div>
+      {/* Usar o novo formulário interativo */}
+     <div className="bg-card p-4 rounded-md shadow-sm border">
+    <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Detalhes</h2>
+    {/* Renderiza o texto ou uma mensagem padrão */}
+    <p className="text-muted-foreground whitespace-pre-wrap">
+        {project.details || "Nenhum detalhe adicionado."}
+    </p>
+</div>
     </div>
   );
 }

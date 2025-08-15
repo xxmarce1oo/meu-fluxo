@@ -15,11 +15,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "./ui/textarea"; // <-- IMPORTAR O TEXTAREA
 
 export default function ProjectCreationForm() {
   const [isOpen, setIsOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
-  const [estimatedHours, setEstimatedHours] = useState(""); // Add state for hours
+  const [estimatedHours, setEstimatedHours] = useState("");
+  const [details, setDetails] = useState(""); // <-- NOVO ESTADO
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -31,8 +33,7 @@ export default function ProjectCreationForm() {
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Send both name and estimatedHours
-        body: JSON.stringify({ name: projectName, estimatedHours: estimatedHours }),
+        body: JSON.stringify({ name: projectName, estimatedHours, details }), // <-- ENVIAR DETALHES
       });
 
       if (!response.ok) {
@@ -41,7 +42,8 @@ export default function ProjectCreationForm() {
 
       setIsOpen(false);
       setProjectName("");
-      setEstimatedHours(""); // Reset the hours field
+      setEstimatedHours("");
+      setDetails(""); // <-- LIMPAR O ESTADO
       router.refresh();
 
     } catch (error) {
@@ -61,37 +63,24 @@ export default function ProjectCreationForm() {
           <DialogHeader>
             <DialogTitle>Criar novo projeto</DialogTitle>
             <DialogDescription>
-              Dê um nome e estime o tempo para começar.
+              Preencha as informações principais da sua nova atividade.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {/* Project Name Field */}
+            {/* Nome */}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Nome
-              </Label>
-              <Input
-                id="name"
-                value={projectName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProjectName(e.target.value)}
-                className="col-span-3"
-                required
-              />
+              <Label htmlFor="name" className="text-right">Nome</Label>
+              <Input id="name" value={projectName} onChange={(e) => setProjectName(e.target.value)} className="col-span-3" required />
             </div>
-            {/* Estimated Hours Field */}
+            {/* Horas */}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="hours" className="text-right">
-                Tempo (horas)
-              </Label>
-              <Input
-                id="hours"
-                type="number"
-                value={estimatedHours}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEstimatedHours(e.target.value)}
-                className="col-span-3"
-                placeholder="Ex: 8"
-                required
-              />
+              <Label htmlFor="hours" className="text-right">Tempo (horas)</Label>
+              <Input id="hours" type="number" value={estimatedHours} onChange={(e) => setEstimatedHours(e.target.value)} className="col-span-3" placeholder="Ex: 8" required />
+            </div>
+            {/* Detalhes */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="details" className="text-right">Detalhes</Label>
+              <Textarea id="details" value={details} onChange={(e) => setDetails(e.target.value)} className="col-span-3" placeholder="Descreva o objetivo desta atividade..." />
             </div>
           </div>
           <DialogFooter>

@@ -8,7 +8,9 @@ interface ProjectData {
   name: string;
   userId: string;
   createdAt: number;
-  estimatedHours: number; // Adicionado
+  estimatedHours: number;
+  details?: string; // Adicionado
+  notes?: string;   // Adicionado
 }
 
 export async function getUserProjects() {

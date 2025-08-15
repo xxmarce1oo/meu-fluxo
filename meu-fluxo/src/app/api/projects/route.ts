@@ -12,10 +12,10 @@ interface ProjectData {
   name: string;
   userId: string;
   createdAt: number;
-  estimatedHours: number; // Adicionado
-  // Futuramente adicionaremos details, notes, status, etc.
+  estimatedHours: number;
+  details?: string; // Adicionado
+  notes?: string;   // Adicionado
 }
-
 export async function POST(request: Request) {
   // 1. Proteger a rota
   const session = await getServerSession(authOptions);
@@ -25,12 +25,11 @@ export async function POST(request: Request) {
   const userId = session.user.email;
 
   // 2. Pegar os dados do corpo da requisição (ATUALIZADO)
-  const { name, estimatedHours } = await request.json();
+  const { name, estimatedHours, details } = await request.json(); // Adicionado 'details'
   if (!name || estimatedHours === undefined) {
     return NextResponse.json({ error: "Nome e tempo estimado são obrigatórios" }, { status: 400 });
   }
-  
-  // Validação simples
+
   const hours = Number(estimatedHours);
   if (isNaN(hours) || hours < 0) {
       return NextResponse.json({ error: "Tempo estimado deve ser um número positivo" }, { status: 400 });
@@ -44,6 +43,8 @@ export async function POST(request: Request) {
     userId,
     createdAt: Date.now(),
     estimatedHours: hours,
+    details: details || "", // Salva os detalhes ou uma string vazia
+    notes: "", // Inicia as observações como uma string vazia
   };
 
   await kv.hset(`project:${projectId}`, projectData as unknown as Record<string, unknown>);
