@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
+import ObservationItem from "./ObservationItem"; // <-- IMPORTAR
 
 interface ProjectObservationsProps {
   projectId: string;
@@ -42,23 +43,17 @@ export default function ProjectObservations({ projectId, initialObservations }: 
     <div className="bg-card p-4 rounded-md shadow-sm border">
       <h2 className="text-2xl font-semibold mb-4 border-b pb-2">Observações</h2>
 
-      {/* Lista de observações existentes */}
       <div className="space-y-4 mb-6">
         {initialObservations.length > 0 ? (
+          // Usar o novo componente ObservationItem para renderizar a lista
           initialObservations.map(obs => (
-            <div key={obs.id} className="p-3 bg-background rounded-md border text-sm">
-              <p className="whitespace-pre-wrap">{obs.text}</p>
-              <p className="text-xs text-muted-foreground mt-2">
-                {new Date(obs.createdAt).toLocaleString('pt-BR')}
-              </p>
-            </div>
+            <ObservationItem key={obs.id} observation={obs} />
           ))
         ) : (
           <p className="text-sm text-muted-foreground">Nenhuma observação adicionada.</p>
         )}
       </div>
 
-      {/* Formulário para adicionar nova observação */}
       <form onSubmit={handleAddObservation} className="space-y-2">
         <Textarea
           placeholder="Adicionar uma nova observação..."
