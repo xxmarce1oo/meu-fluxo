@@ -1,6 +1,7 @@
 // src/app/(app)/layout.tsx
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
+import TimerEffect from "@/components/layout/TimerEffect"; // <-- IMPORTAR
 
 export default function AppLayout({
   children,
@@ -9,6 +10,7 @@ export default function AppLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
+      <TimerEffect /> {/* <-- ADICIONAR AQUI */}
       <Navbar />
       <div className="flex flex-1">
         <Sidebar />
