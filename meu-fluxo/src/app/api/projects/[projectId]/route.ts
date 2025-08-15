@@ -2,13 +2,13 @@
 import { kv } from "@vercel/kv";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
-  const { projectId } = params;
+  const { projectId } = await params;
 
   // 1. Proteger a rota e pegar o usuário
   const session = await getServerSession(authOptions);
@@ -36,9 +36,9 @@ export async function DELETE(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
-  const { projectId } = params;
+  const { projectId } = await params;
 
   // 1. Proteger a rota e pegar o usuário
   const session = await getServerSession(authOptions);
@@ -59,7 +59,7 @@ export async function PATCH(
   }
 
   // 4. Montar o objeto de atualização apenas com os campos fornecidos
-  const updateData: Record<string, any> = {};
+  const updateData: Record<string, string | number> = {};
   if (name) updateData.name = name;
   if (estimatedHours !== undefined) {
       const hours = Number(estimatedHours);

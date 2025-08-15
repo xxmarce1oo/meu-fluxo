@@ -2,14 +2,14 @@
 import { kv } from "@vercel/kv";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "../../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { nanoid } from "nanoid";
 
 export async function POST(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
-  const { projectId } = params;
+  const { projectId } = await params;
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.email) {

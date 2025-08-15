@@ -2,9 +2,10 @@
 import { kv } from "@vercel/kv";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "../../../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
+import { Session } from "next-auth";
 
-async function verifyUserAccess(projectId: string, session: any) {
+async function verifyUserAccess(projectId: string, session: Session | null) {
     if (!session || !session.user?.email) return false;
     const project: { userId?: string } | null = await kv.hgetall(`project:${projectId}`);
     return project && project.userId === session.user.email;
@@ -12,10 +13,11 @@ async function verifyUserAccess(projectId: string, session: any) {
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { projectId: string; observationId: string } }
+    { params }: { params: Promise<{ projectId: string; observationId: string }> }
 ) {
+    const { projectId, observationId } = await params;
     const session = await getServerSession(authOptions);
-    if (!await verifyUserAccess(params.projectId, session)) {
+    if (!await verifyUserAccess(projectId, session)) {
         return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
@@ -24,22 +26,23 @@ export async function PATCH(
         return NextResponse.json({ error: "O texto é obrigatório" }, { status: 400 });
     }
 
-    await kv.hset(`observation:${params.observationId}`, { text });
+    await kv.hset(`observation:${observationId}`, { text });
     return NextResponse.json({ message: "Observação atualizada" }, { status: 200 });
 }
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { projectId: string; observationId: string } }
+    { params }: { params: Promise<{ projectId: string; observationId: string }> }
 ) {
+    const { projectId, observationId } = await params;
     const session = await getServerSession(authOptions);
-    if (!await verifyUserAccess(params.projectId, session)) {
+    if (!await verifyUserAccess(projectId, session)) {
         return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
     const pipeline = kv.pipeline();
-    pipeline.del(`observation:${params.observationId}`);
-    pipeline.zrem(`observations:by-project:${params.projectId}`, params.observationId);
+    pipeline.del(`observation:${observationId}`);
+    pipeline.zrem(`observations:by-project:${projectId}`, observationId);
     await pipeline.exec();
 
     return NextResponse.json({ message: "Observação deletada" }, { status: 200 });

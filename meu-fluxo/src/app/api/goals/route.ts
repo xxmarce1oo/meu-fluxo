@@ -2,7 +2,7 @@
 import { kv } from "@vercel/kv";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export interface UserGoals {
   daily: number;
@@ -10,7 +10,7 @@ export interface UserGoals {
   monthly: number;
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.email) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });

@@ -1,7 +1,7 @@
 // src/lib/analytics-service.ts
 import { kv } from "@vercel/kv";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { UserGoals } from "@/app/api/goals/route";
 import { TimeLogData } from "./project-service";
 

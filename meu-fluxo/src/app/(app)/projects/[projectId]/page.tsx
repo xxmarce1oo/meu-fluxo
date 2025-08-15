@@ -3,15 +3,15 @@
 import { getProjectById, getProjectObservations, getProjectTimeLogs } from "@/lib/project-service";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
-import { authOptions } from "../../../api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import ProjectObservations from "@/components/ProjectObservations";
 import ActivityTimerView from "@/components/ActivityTimerView";
 import TimeLogList from "@/components/TimeLogList";
 
 interface ProjectDetailsPageProps {
-  params: {
+  params: Promise<{ 
     projectId: string;
-  };
+  }>;
 }
 
 export default async function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
@@ -20,11 +20,14 @@ export default async function ProjectDetailsPage({ params }: ProjectDetailsPageP
     redirect("/");
   }
 
+  // Await params since it's now a Promise in Next.js 15
+  const { projectId } = await params;
+
   // Correctly destructure all three results from Promise.all
   const [project, observations, timeLogs] = await Promise.all([
-    getProjectById(params.projectId),
-    getProjectObservations(params.projectId),
-    getProjectTimeLogs(params.projectId)
+    getProjectById(projectId),
+    getProjectObservations(projectId),
+    getProjectTimeLogs(projectId)
   ]);
 
   if (!project) {

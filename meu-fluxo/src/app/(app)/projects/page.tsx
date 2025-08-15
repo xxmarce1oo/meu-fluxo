@@ -1,10 +1,10 @@
 // src/app/projects/page.tsx
 
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import ProjectCreationForm from "@/components/ProjectCreationForm";
-import { getUserProjects } from "@/lib/project-service";
+import { getUserProjects, ProjectData } from "@/lib/project-service";
 import ProjectCard from "@/components/ProjectCard"; // <-- IMPORT THE NEW COMPONENT
 
 export default async function ProjectsPage() {
@@ -28,7 +28,7 @@ export default async function ProjectsPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {/* Simply map over the projects and render the new card component */}
-            {projects.map((project: any) => (
+            {projects.map((project: ProjectData) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>

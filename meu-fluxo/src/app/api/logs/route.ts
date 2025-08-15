@@ -2,7 +2,7 @@
 import { kv } from "@vercel/kv";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { nanoid } from "nanoid";
 import { getProjectById } from "@/lib/project-service";
 
