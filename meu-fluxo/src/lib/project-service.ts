@@ -8,6 +8,7 @@ interface ProjectData {
   name: string;
   userId: string;
   createdAt: number;
+  estimatedHours: number; // Adicionado
 }
 
 export async function getUserProjects() {
@@ -31,4 +32,23 @@ export async function getUserProjects() {
   const projects = await pipeline.exec<ProjectData[]>();
 
   return projects;
+}
+
+export async function getProjectById(projectId: string) {
+  // 1. Pega a sessão do usuário
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user?.email) {
+    throw new Error("Não autorizado");
+  }
+  const userId = session.user.email;
+
+  // 2. Busca os detalhes do projeto
+  const project = await kv.hgetall(`project:${projectId}`);
+
+  // 3. Validação de segurança
+  if (!project || project.userId !== userId) {
+    return null; // Retorna nulo se o projeto não for encontrado ou não pertencer ao usuário
+  }
+
+return project as unknown as ProjectData;
 }
