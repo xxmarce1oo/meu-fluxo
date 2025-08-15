@@ -54,3 +54,28 @@ export async function getProjectById(projectId: string) {
 
 return project as unknown as ProjectData;
 }
+
+export interface ObservationData {
+  id: string;
+  text: string;
+  createdAt: number;
+  projectId: string;
+}
+
+export async function getProjectObservations(projectId: string): Promise<ObservationData[]> {
+  // (A validação de segurança já acontece em getProjectById, que será chamada antes)
+
+  // Busca os IDs das observações, ordenados por data de criação (score)
+  const observationIds = await kv.zrange(`observations:by-project:${projectId}`, 0, -1);
+
+  if (observationIds.length === 0) {
+    return [];
+  }
+
+  // Busca os detalhes de cada observação
+  const pipeline = kv.pipeline();
+  observationIds.forEach(id => pipeline.hgetall(`observation:${id}`));
+  const observations = await pipeline.exec();
+
+  return observations as ObservationData[];
+}
