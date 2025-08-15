@@ -3,7 +3,7 @@
 import { getProjectById, getProjectObservations } from "@/lib/project-service";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { authOptions } from "../../../api/auth/[...nextauth]/route";
 import ProjectObservations from "@/components/ProjectObservations";
 
 interface ProjectDetailsPageProps {
