@@ -3,11 +3,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderKanban, LayoutDashboard } from "lucide-react";
+import { FolderKanban, LayoutDashboard, Settings } from "lucide-react"; // Adicionar Settings
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/projects", label: "Atividades", icon: FolderKanban },
+  { href: "/settings", label: "Configurações", icon: Settings },
 ];
 
 export default function Sidebar() {
