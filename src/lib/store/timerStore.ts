@@ -1,6 +1,6 @@
 // src/lib/store/timerStore.ts
 import { create } from 'zustand';
-import { ProjectData } from '../project-service';
+import { ProjectData } from '@/types';
 
 interface TimerState {
   isRunning: boolean;

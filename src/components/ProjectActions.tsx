@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { useState } from "react";
 import ProjectEditForm from "./ProjectEditionForm"; // Corrected component name
+import { toast } from "sonner"; // Adicionar import do toast
 
 interface ProjectActionsProps {
   project: {
@@ -25,12 +26,19 @@ export default function ProjectActions({ project }: ProjectActionsProps) {
 
     setIsDeleting(true);
     try {
-      await fetch(`/api/projects/${project.id}`, {
+      const response = await fetch(`/api/projects/${project.id}`, {
         method: "DELETE",
       });
-      router.refresh();
+      
+      if (response.ok) {
+        toast.success("Projeto deletado com sucesso!");
+        router.refresh();
+      } else {
+        throw new Error("Falha ao deletar projeto");
+      }
     } catch (error) {
       console.error("Falha ao deletar o projeto", error);
+      toast.error("Falha ao deletar o projeto. Tente novamente.");
     } finally {
       setIsDeleting(false);
     }

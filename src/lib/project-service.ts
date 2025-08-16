@@ -2,16 +2,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { kv } from "@vercel/kv";
+import { ProjectData, ObservationData, TimeLogData } from "@/types";
 
-export interface ProjectData {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: number;
-  estimatedHours: number;
-  details?: string; // Adicionado
-  notes?: string;   // Adicionado
-}
 
 export async function getUserProjects() {
   // 1. Get the user session directly
@@ -55,12 +47,6 @@ export async function getProjectById(projectId: string) {
 return project as unknown as ProjectData;
 }
 
-export interface ObservationData {
-  id: string;
-  text: string;
-  createdAt: number;
-  projectId: string;
-}
 
 export async function getProjectObservations(projectId: string): Promise<ObservationData[]> {
   // (A validação de segurança já acontece em getProjectById, que será chamada antes)
@@ -80,16 +66,6 @@ export async function getProjectObservations(projectId: string): Promise<Observa
   return observations as ObservationData[];
 }
 
-export interface TimeLogData {
-  id: string;
-  userId: string;
-  projectId: string;
-  description: string;
-  startTime: number;
-  endTime: number;
-  duration: number; // em segundos
-  createdAt: number;
-}
 
 export async function getProjectTimeLogs(projectId: string): Promise<TimeLogData[]> {
   // Busca os IDs dos logs, ordenados do mais recente para o mais antigo

@@ -1,12 +1,14 @@
 // src/components/ProjectObservations.tsx
 "use client";
 
-import { ObservationData } from "@/lib/project-service";
+import { ObservationData } from "@/types";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import ObservationItem from "./ObservationItem"; // <-- IMPORTAR
+import { toast } from "sonner"; // Adicionar import do toast
+import { MessageSquare } from "lucide-react"; // Adicionar ícone para estado vazio
 
 interface ProjectObservationsProps {
   projectId: string;
@@ -24,16 +26,22 @@ export default function ProjectObservations({ projectId, initialObservations }: 
 
     setIsLoading(true);
     try {
-      await fetch(`/api/projects/${projectId}/observations`, {
+      const response = await fetch(`/api/projects/${projectId}/observations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: newObservationText }),
       });
 
-      setNewObservationText("");
-      router.refresh();
+      if (response.ok) {
+        setNewObservationText("");
+        toast.success("Observação adicionada com sucesso!");
+        router.refresh();
+      } else {
+        throw new Error("Falha ao adicionar observação");
+      }
     } catch (error) {
       console.error("Falha ao adicionar observação", error);
+      toast.error("Falha ao adicionar observação. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +58,11 @@ export default function ProjectObservations({ projectId, initialObservations }: 
             <ObservationItem key={obs.id} observation={obs} />
           ))
         ) : (
-          <p className="text-sm text-muted-foreground">Nenhuma observação adicionada.</p>
+          <div className="flex flex-col items-center justify-center text-center text-gray-500 py-8 border-2 border-dashed rounded-lg">
+            <MessageSquare className="h-8 w-8 mb-2 text-gray-400" />
+            <p className="text-sm font-medium">Nenhuma observação adicionada</p>
+            <p className="text-xs mt-1">Adicione suas primeiras observações sobre este projeto.</p>
+          </div>
         )}
       </div>
 
@@ -62,7 +74,7 @@ export default function ProjectObservations({ projectId, initialObservations }: 
           rows={3}
         />
         <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" isLoading={isLoading}>
             {isLoading ? 'Adicionando...' : 'Adicionar'}
           </Button>
         </div>

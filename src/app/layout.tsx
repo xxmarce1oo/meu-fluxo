@@ -2,7 +2,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Providers from "./providers"; // <-- IMPORTAR
+import Providers from "./providers";
+import { Toaster } from "@/components/ui/Sonner"; // <-- CORREÇÃO AQUI
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,9 +18,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Providers>{children}</Providers> {/* <-- ENVELOPAR */}
+        <Providers>
+          {children}
+          <Toaster /> {/* Adicione o Toaster aqui */}
+        </Providers>
       </body>
     </html>
   );

@@ -1,16 +1,7 @@
 // src/components/TimeLogList.tsx
-import { TimeLogData } from "@/lib/project-service";
-
-// Função para formatar a duração de segundos para um formato legível
-const formatDuration = (seconds: number) => {
-    if (seconds < 60) return `${seconds}s`;
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes}m`;
-}
+import { TimeLogData } from "@/types";
+import { formatDuration } from "@/lib/utils";
+import { Clock } from "lucide-react"; // Adicionar ícone para estado vazio
 
 interface TimeLogListProps {
     logs: TimeLogData[];
@@ -19,8 +10,12 @@ interface TimeLogListProps {
 export default function TimeLogList({ logs }: TimeLogListProps) {
     if (logs.length === 0) {
         return (
-            <div className="p-4 bg-card border rounded-lg text-center">
-                <p className="text-muted-foreground">Nenhum registro de tempo para esta atividade ainda.</p>
+            <div className="p-8 bg-card border rounded-lg">
+                <div className="flex flex-col items-center justify-center text-center text-gray-500">
+                    <Clock className="h-8 w-8 mb-3 text-gray-400" />
+                    <h3 className="text-lg font-medium mb-1">Nenhum registro de tempo</h3>
+                    <p className="text-sm">Use o timer acima para começar a registrar o tempo gasto neste projeto.</p>
+                </div>
             </div>
         )
     }

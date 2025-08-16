@@ -1,13 +1,14 @@
 // src/components/ObservationItem.tsx
 "use client";
 
-import { ObservationData } from "@/lib/project-service";
+import { ObservationData } from "@/types";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Textarea } from "./ui/textarea";
 import { MoreVertical, Trash2, Edit } from "lucide-react";
+import { toast } from "sonner"; // Adicionar import do toast
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 // Precisamos instalar o 'lucide-react' e o 'dropdown-menu'
@@ -28,10 +29,16 @@ export default function ObservationItem({ observation }: ObservationItemProps) {
     if (!window.confirm("Tem certeza que quer deletar esta observação?")) return;
     setIsDeleting(true);
     try {
-      await fetch(`/api/projects/${observation.projectId}/observations/${observation.id}`, { method: "DELETE" });
-      router.refresh();
+      const response = await fetch(`/api/projects/${observation.projectId}/observations/${observation.id}`, { method: "DELETE" });
+      if (response.ok) {
+        toast.success("Observação deletada com sucesso!");
+        router.refresh();
+      } else {
+        throw new Error("Falha ao deletar observação");
+      }
     } catch (error) {
       console.error(error);
+      toast.error("Falha ao deletar a observação. Tente novamente.");
     } finally {
       setIsDeleting(false);
     }
@@ -41,14 +48,22 @@ export default function ObservationItem({ observation }: ObservationItemProps) {
     e.preventDefault();
     setIsEditing(true);
     try {
-      await fetch(`/api/projects/${observation.projectId}/observations/${observation.id}`, {
+      const response = await fetch(`/api/projects/${observation.projectId}/observations/${observation.id}`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: editText }),
       });
-      router.refresh();
-      setIsEditing(false); // Fecha o modal
+      
+      if (response.ok) {
+        toast.success("Observação editada com sucesso!");
+        router.refresh();
+        setIsEditing(false); // Fecha o modal
+      } else {
+        throw new Error("Falha ao editar observação");
+      }
     } catch (error) {
       console.error(error);
+      toast.error("Falha ao editar a observação. Tente novamente.");
     }
   };
 
@@ -75,9 +90,13 @@ export default function ObservationItem({ observation }: ObservationItemProps) {
                 <span>Editar</span>
               </DropdownMenuItem>
             </DialogTrigger>
-            <DropdownMenuItem onClick={handleDelete} className="text-red-500">
+            <DropdownMenuItem 
+              onClick={handleDelete} 
+              className="text-red-500"
+              disabled={isDeleting}
+            >
               <Trash2 className="mr-2 h-4 w-4" />
-              <span>Deletar</span>
+              <span>{isDeleting ? 'Deletando...' : 'Deletar'}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -89,7 +108,9 @@ export default function ObservationItem({ observation }: ObservationItemProps) {
           <form onSubmit={handleEdit}>
             <Textarea value={editText} onChange={(e) => setEditText(e.target.value)} rows={5} className="my-4"/>
             <DialogFooter>
-              <Button type="submit" disabled={isDeleting}>Salvar</Button>
+              <Button type="submit" isLoading={isEditing}>
+                {isEditing ? 'Salvando...' : 'Salvar'}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

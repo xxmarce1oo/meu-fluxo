@@ -4,22 +4,16 @@
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { ProjectData } from "@/lib/project-service";
+import { ProjectData } from "@/types";
 import { useRouter } from "next/navigation";
 import { Play, Pause, StopCircle } from "lucide-react";
 import { useTimerStore } from "@/lib/store/timerStore"; // <-- Importar a store
+import { toast } from "sonner"; // Adicionar import do toast
+import { formatTime } from "@/lib/utils";
 
 interface TimeTrackerProps {
   projects: ProjectData[];
 }
-
-// Função de formatação continua a mesma
-const formatTime = (totalSeconds: number) => {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  return [hours, minutes, seconds].map(v => (v < 10 ? "0" + v : v)).join(":");
-};
 
 export default function TimeTracker({ projects }: TimeTrackerProps) {
   const router = useRouter();
@@ -30,7 +24,7 @@ export default function TimeTracker({ projects }: TimeTrackerProps) {
   const handleStart = () => {
     const project = projects.find(p => p.id === selectedProject?.id);
     if (!project) {
-      alert("Por favor, selecione um projeto para iniciar.");
+      toast.error("Por favor, selecione um projeto para iniciar.");
       return;
     }
     actions.startTimer(project, description);

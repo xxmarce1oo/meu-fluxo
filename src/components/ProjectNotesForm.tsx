@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner"; // Adicionar import do toast
 import {
   Dialog,
   DialogContent,
@@ -33,16 +34,22 @@ export default function ProjectNotesForm({ project }: ProjectNotesFormProps) {
     setIsLoading(true);
 
     try {
-      await fetch(`/api/projects/${project.id}`, {
+      const response = await fetch(`/api/projects/${project.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notes }),
       });
 
-      setIsOpen(false);
-      router.refresh();
+      if (response.ok) {
+        setIsOpen(false);
+        toast.success("Notas salvas com sucesso!");
+        router.refresh();
+      } else {
+        throw new Error("Falha ao salvar notas");
+      }
     } catch (error) {
       console.error("Falha ao salvar as observações", error);
+      toast.error("Falha ao salvar as notas. Tente novamente.");
     } finally {
       setIsLoading(false);
     }

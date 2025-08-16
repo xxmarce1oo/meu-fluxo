@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner"; // Adicionar import do toast
 import {
   Dialog,
   DialogContent,
@@ -37,7 +38,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     setIsLoading(true);
 
     try {
-      await fetch(`/api/projects/${project.id}`, {
+      const response = await fetch(`/api/projects/${project.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         // Send both name and estimatedHours in the request body
@@ -47,10 +48,16 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
         }),
       });
       
-      setIsOpen(false);
-      router.refresh();
+      if (response.ok) {
+        setIsOpen(false);
+        toast.success("Projeto editado com sucesso!");
+        router.refresh();
+      } else {
+        throw new Error("Falha ao editar projeto");
+      }
     } catch (error) {
       console.error("Falha ao editar o projeto", error);
+      toast.error("Falha ao editar o projeto. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -100,7 +107,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" isLoading={isLoading}>
               {isLoading ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </DialogFooter>

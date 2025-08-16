@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner"; // Adicionar import do toast
 import {
   Dialog,
   DialogContent,
@@ -17,7 +18,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "./ui/textarea"; // <-- IMPORTAR O TEXTAREA
 
-export default function ProjectCreationForm() {
+interface ProjectCreationFormProps {
+  onProjectCreated?: () => void;
+}
+
+export default function ProjectCreationForm({ onProjectCreated }: ProjectCreationFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [estimatedHours, setEstimatedHours] = useState("");
@@ -44,10 +49,13 @@ export default function ProjectCreationForm() {
       setProjectName("");
       setEstimatedHours("");
       setDetails(""); // <-- LIMPAR O ESTADO
+      toast.success("Projeto criado com sucesso!");
+      onProjectCreated?.(); // Chama o callback se fornecido
       router.refresh();
 
     } catch (error) {
       console.error(error);
+      toast.error("Falha ao criar o projeto. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -84,7 +92,7 @@ export default function ProjectCreationForm() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" isLoading={isLoading}>
               {isLoading ? 'Salvando...' : 'Salvar'}
             </Button>
           </DialogFooter>

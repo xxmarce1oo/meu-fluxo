@@ -14,25 +14,26 @@ interface ProjectDetailsPageProps {
   }>;
 }
 
-export default async function ProjectDetailsPage({ params }: ProjectDetailsPageProps) {
+export default async function ProjectDetailsPage({
+  params,
+}: ProjectDetailsPageProps) {
+  const { projectId } = await params;
   const session = await getServerSession(authOptions);
-  if (!session) {
+
+  if (!session?.user?.email) {
     redirect("/");
   }
 
-  // Await params since it's now a Promise in Next.js 15
-  const { projectId } = await params;
-
-  // Correctly destructure all three results from Promise.all
-  const [project, observations, timeLogs] = await Promise.all([
-    getProjectById(projectId),
-    getProjectObservations(projectId),
-    getProjectTimeLogs(projectId)
-  ]);
+  const project = await getProjectById(projectId);
 
   if (!project) {
     notFound();
   }
+
+  const [observations, timeLogs] = await Promise.all([
+    getProjectObservations(projectId),
+    getProjectTimeLogs(projectId)
+  ]);
 
   return (
     <div className="container mx-auto p-8 space-y-8">

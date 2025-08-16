@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
+import { toast } from "sonner"; // Adicionar import do toast
 
 interface ProjectDetailsFormProps {
   project: {
@@ -26,15 +27,21 @@ export default function ProjectDetailsForm({ project }: ProjectDetailsFormProps)
     setIsLoading(true);
 
     try {
-      await fetch(`/api/projects/${project.id}`, {
+      const response = await fetch(`/api/projects/${project.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ details, notes }),
       });
-      router.refresh();
-      // Adicionar um feedback de sucesso (Toast) aqui seria uma boa melhoria futura
+      
+      if (response.ok) {
+        toast.success("Detalhes salvos com sucesso!");
+        router.refresh();
+      } else {
+        throw new Error("Falha ao salvar detalhes");
+      }
     } catch (error) {
       console.error("Falha ao salvar os detalhes", error);
+      toast.error("Falha ao salvar os detalhes. Tente novamente.");
     } finally {
       setIsLoading(false);
     }

@@ -3,7 +3,7 @@ import { kv } from "@vercel/kv";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { UserGoals } from "@/app/api/goals/route";
-import { TimeLogData } from "./project-service";
+import { TimeLogData } from "@/types";
 
 export interface ProgressReport {
   daily: { goal: number; completed: number };

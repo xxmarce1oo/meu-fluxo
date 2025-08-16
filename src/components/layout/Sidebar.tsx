@@ -3,12 +3,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderKanban, LayoutDashboard, Settings } from "lucide-react"; // Adicionar Settings
+import { FolderKanban, Landmark, LayoutDashboard, Settings } from "lucide-react"; // Adicionar Settings
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/projects", label: "Atividades", icon: FolderKanban },
   { href: "/settings", label: "Configurações", icon: Settings },
+  { href: "/financeiro", label: "Financeiro", icon: Landmark }, // <-- NOVA LINHA
 ];
 
 export default function Sidebar() {
