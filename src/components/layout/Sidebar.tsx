@@ -8,8 +8,9 @@ import { FolderKanban, Landmark, LayoutDashboard, Settings } from "lucide-react"
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/projects", label: "Atividades", icon: FolderKanban },
+  { href: "/financeiro", label: "Financeiro", icon: Landmark }, 
   { href: "/settings", label: "Configurações", icon: Settings },
-  { href: "/financeiro", label: "Financeiro", icon: Landmark }, // <-- NOVA LINHA
+  
 ];
 
 export default function Sidebar() {

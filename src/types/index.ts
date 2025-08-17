@@ -53,4 +53,35 @@ export interface TransactionData {
   type: 'income' | 'expense'; // Receita ou Despesa
   date: number; // Usaremos um timestamp para a data
   createdAt: number;
+  category?: string; // Para "Gastos", "Revisão", etc.
+  paidBy?: string;
+  // Novos campos baseados na planilha
+  paymentMethod: 'credit' | 'debit' | 'pix' | 'cash'; // Método de pagamento
+  installments?: number; // Número de parcelas (apenas para crédito)
+  currentInstallment?: number; // Parcela atual (apenas para crédito parcelado)
+  creditCard?: string; // Nome do cartão de crédito usado
+}
+
+// Interface para cartões de crédito
+export interface CreditCardData {
+  id: string;
+  userId: string;
+  name: string; // Nome do cartão (ex: "Nubank", "Inter", "Itaú")
+  bank: string; // Banco emissor
+  lastFourDigits: string; // Últimos 4 dígitos
+  creditLimit: number; // Limite do cartão
+  dueDay: number; // Dia do vencimento da fatura (1-31)
+  closingDay: number; // Dia do fechamento da fatura (1-31)
+  isActive: boolean; // Se o cartão está ativo
+  createdAt: number;
+}
+
+// Interface para resumo por banco
+export interface BankSummary {
+  bankName: string;
+  cards: CreditCardData[];
+  totalSpent: number;
+  totalLimit: number;
+  nextDueDate: Date;
+  transactions: TransactionData[];
 }
