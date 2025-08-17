@@ -1,10 +1,10 @@
 // src/components/ProjectActions.tsx
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Button } from "./ui/button";
+import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import ProjectEditForm from "./ProjectEditionForm"; // Corrected component name
+import DeleteProjectButton from "./DeleteProjectButton";
 import { toast } from "sonner"; // Adicionar import do toast
 
 interface ProjectActionsProps {
@@ -17,13 +17,10 @@ interface ProjectActionsProps {
 
 export default function ProjectActions({ project }: ProjectActionsProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!window.confirm("Tem certeza que deseja deletar este projeto? Esta ação não pode ser desfeita.")) {
-      return;
-    }
-
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/projects/${project.id}`, {
@@ -32,7 +29,14 @@ export default function ProjectActions({ project }: ProjectActionsProps) {
       
       if (response.ok) {
         toast.success("Projeto deletado com sucesso!");
-        router.refresh();
+        
+        // Se estamos na página de detalhes do projeto, redirecionar para a lista de projetos
+        if (pathname.includes(`/projects/${project.id}`)) {
+          router.push("/projects");
+        } else {
+          // Se estamos na lista de projetos, apenas refresh
+          router.refresh();
+        }
       } else {
         throw new Error("Falha ao deletar projeto");
       }
@@ -49,14 +53,11 @@ export default function ProjectActions({ project }: ProjectActionsProps) {
       {/* Pass the entire 'project' object as a single prop */}
       <ProjectEditForm project={project} />
 
-      <Button 
-        variant="destructive" 
-        size="sm"
-        onClick={handleDelete}
-        disabled={isDeleting}
-      >
-        {isDeleting ? 'Deletando...' : 'Deletar'}
-      </Button>
+      <DeleteProjectButton 
+        projectName={project.name}
+        onDelete={handleDelete}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

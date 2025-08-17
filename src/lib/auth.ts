@@ -12,4 +12,33 @@ export const authOptions: AuthOptions = {
     // ...adicionar mais provedores aqui
   ],
   secret: process.env.AUTH_SECRET,
+  pages: {
+    signIn: "/", // Página de login customizada (opcional)
+    error: "/", // Página de erro customizada (opcional)
+  },
+  callbacks: {
+    async signIn({ user, account, profile }) {
+      // Permitir todos os logins válidos
+      return true;
+    },
+    async redirect({ url, baseUrl }) {
+      // Redirecionar para dashboard após login bem-sucedido
+      if (url.startsWith("/")) {
+        return url;
+      }
+      // Se vier de uma URL externa, sempre redirecionar para dashboard
+      if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      return `${baseUrl}/dashboard`;
+    },
+    async session({ session, token }) {
+      // Customizar a sessão se necessário
+      return session;
+    },
+    async jwt({ token, user }) {
+      // Customizar o JWT se necessário
+      return token;
+    },
+  },
 }

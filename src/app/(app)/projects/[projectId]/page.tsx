@@ -7,6 +7,10 @@ import { authOptions } from "@/lib/auth";
 import ProjectObservations from "@/components/ProjectObservations";
 import ActivityTimerView from "@/components/ActivityTimerView";
 import TimeLogList from "@/components/TimeLogList";
+import ProjectActions from "@/components/ProjectActions";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface ProjectDetailsPageProps {
   params: Promise<{ 
@@ -37,12 +41,29 @@ export default async function ProjectDetailsPage({
 
   return (
     <div className="container mx-auto p-8 space-y-8">
-      {/* Header */}
+      {/* Header with Navigation */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <Link href="/projects">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Voltar aos Projetos
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-4xl font-bold">{project.name}</h1>
+            <p className="text-lg text-muted-foreground">
+              {project.estimatedHours} horas estimadas
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <ProjectActions project={project} />
+        </div>
+      </div>
+
+      {/* Timer Section */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold">{project.name}</h1>
-        <p className="text-lg text-muted-foreground">
-          {project.estimatedHours} horas estimadas
-        </p>
         <ActivityTimerView projectId={project.id} />
       </div>
 

@@ -226,8 +226,8 @@ export default function NewCreditCardForm() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" isLoading={isLoading}>
-              Cadastrar Cartão
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Cadastrando..." : "Cadastrar Cartão"}
             </Button>
           </DialogFooter>
         </form>
