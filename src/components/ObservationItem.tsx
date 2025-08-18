@@ -108,7 +108,7 @@ export default function ObservationItem({ observation }: ObservationItemProps) {
           <form onSubmit={handleEdit}>
             <Textarea value={editText} onChange={(e) => setEditText(e.target.value)} rows={5} className="my-4"/>
             <DialogFooter>
-              <Button type="submit" isLoading={isEditing}>
+              <Button type="submit" disabled={isEditing}>
                 {isEditing ? 'Salvando...' : 'Salvar'}
               </Button>
             </DialogFooter>

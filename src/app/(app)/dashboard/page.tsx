@@ -5,6 +5,7 @@ import TimeTracker from "@/components/TimeTracker";
 import { getUserProgressReport } from "@/lib/analytics-service";
 import GoalCircle from "@/components/GoalCircle";
 import TimeLogList from "@/components/TimeLogList"; // <-- Garantir que a lista está importada
+import ChronosBotButton from "@/components/ChronosBotButton"; // <-- Importe o novo componente
 
 export default async function DashboardPage() {
   // Agora buscamos os 3 conjuntos de dados em paralelo
@@ -14,12 +15,16 @@ export default async function DashboardPage() {
     getTodaysUserLogs() // <-- Adicionar a busca dos logs de hoje de volta
   ]);
 
-  return (
+   return (
     <div className="container mx-auto p-8 space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Seu progresso de hoje, pronto para começar?</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-4xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">Seu progresso de hoje, pronto para começar?</p>
+        </div>
+        <ChronosBotButton /> {/* <-- Adicione o botão aqui */}
       </div>
+      
 
       {/* Seção de Metas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
