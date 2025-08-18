@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
-import { Toaster } from "@/components/ui/Sonner"; // <-- CORREÇÃO AQUI
+import { Toaster } from "@/components/ui/Sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,7 +22,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           {children}
-          <Toaster /> {/* Adicione o Toaster aqui */}
+          
+          {/* Deixamos apenas UM Toaster para as notificações padrão */}
+          <Toaster position="bottom-right" />
+
         </Providers>
       </body>
     </html>

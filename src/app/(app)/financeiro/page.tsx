@@ -8,6 +8,8 @@ import { getUserCreditCards } from "@/lib/credit-card-service";
 import { Landmark } from "lucide-react";
 import FinancialSummary from "@/components/finance/FinancialSummary";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// 1. Importe o novo componente de análise
+import FinancialAnalytics from "@/components/finance/FinancialAnalytics"; 
 
 export default async function FinanceiroPage() {
   const transactions = await getUserTransactions();
@@ -23,16 +25,21 @@ export default async function FinanceiroPage() {
         </div>
       </div>
 
-      {/* Seção de Resumo preenchida */}
       <FinancialSummary transactions={transactions} />
 
-      {/* Sistema de Abas */}
-      <Tabs defaultValue="gastos" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="analise" className="w-full">
+        {/* 2. Adicione a nova aba "Análise" */}
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="analise">Análise</TabsTrigger>
           <TabsTrigger value="gastos">Gastos por Banco</TabsTrigger>
           <TabsTrigger value="cartoes">Meus Cartões</TabsTrigger>
           <TabsTrigger value="transacoes">Todas Transações</TabsTrigger>
         </TabsList>
+        
+        {/* 3. Adicione o conteúdo para a nova aba */}
+        <TabsContent value="analise">
+          <FinancialAnalytics transactions={transactions} />
+        </TabsContent>
         
         <TabsContent value="gastos" className="space-y-4">
           <div className="space-y-4">

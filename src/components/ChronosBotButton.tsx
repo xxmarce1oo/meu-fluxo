@@ -1,31 +1,36 @@
-// src/components/ChronosBotButton.tsx
+// src/components/ChronosBotControls.tsx
 "use client";
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react'; // Importar para verificar o usuário
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Bot } from "lucide-react";
+import { Bot, Play, Pause } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 
-export default function ChronosBotButton() {
+export default function ChronosBotControls() {
+  const { data: session, status } = useSession(); // Pegar dados da sessão
   const [isOpen, setIsOpen] = useState(false);
   const [activityName, setActivityName] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<'start' | 'pause' | false>(false);
 
-  const handleStartBot = async () => {
+  // Lógica de exibição condicional
+  const isAdmin = process.env.NEXT_PUBLIC_ADMIN_EMAIL === session?.user?.email;
+
+  const handleApiCall = async (action: 'start' | 'pause') => {
     if (!activityName.trim()) {
       toast.error("Por favor, digite um nome para a atividade.");
       return;
     }
     
-    setIsLoading(true);
+    setIsLoading(action);
+    const endpoint = action === 'start' ? '/api/bot/start-chronos-activity' : '/api/bot/pause-chronos-activity';
+    
     try {
-      const response = await fetch('/api/bot/start-chronos-activity', {
+      const response = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activityName }),
       });
 
@@ -47,34 +52,49 @@ export default function ChronosBotButton() {
     }
   };
 
+  // Se não for admin ou se a sessão estiver carregando, não renderiza nada
+  if (status !== 'authenticated' || !isAdmin) {
+    return null;
+  }
+
+  // Se for admin, renderiza o botão
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary">
           <Bot className="mr-2 h-4 w-4" />
-          Iniciar Atividade no Chronos
+          Automatizar Chronos
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Automatizar Início de Atividade</DialogTitle>
+          <DialogTitle>Automação de Atividade no Chronos</DialogTitle>
           <DialogDescription>
-            Digite o nome da atividade que o bot deve criar e iniciar no Chronos.
+            Digite o nome da atividade para iniciar ou pausar.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <Input
-            placeholder="Nome da Atividade"
+            placeholder="Nome exato da Atividade"
             value={activityName}
             onChange={(e) => setActivityName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleStartBot();
-            }}
           />
         </div>
-        <DialogFooter>
-          <Button onClick={handleStartBot} disabled={isLoading}>
-            {isLoading ? "Executando..." : "Executar Bot"}
+        <DialogFooter className="sm:justify-between">
+          <Button 
+            onClick={() => handleApiCall('pause')} 
+            disabled={!!isLoading}
+            variant="outline"
+          >
+            <Pause className="mr-2 h-4 w-4" />
+            {isLoading === 'pause' ? "Pausando..." : "Pausar Tarefa"}
+          </Button>
+          <Button 
+            onClick={() => handleApiCall('start')} 
+            disabled={!!isLoading}
+          >
+            <Play className="mr-2 h-4 w-4" />
+            {isLoading === 'start' ? "Iniciando..." : "Iniciar Tarefa"}
           </Button>
         </DialogFooter>
       </DialogContent>

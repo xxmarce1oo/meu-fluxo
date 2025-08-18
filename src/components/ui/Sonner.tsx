@@ -1,12 +1,15 @@
+// src/components/ui/Sonner.tsx
 "use client"
 
-import { useTheme } from "next-themes" // (Você precisará instalar next-themes)
+import { useTheme } from "next-themes"
 import { Toaster as Sonner } from "sonner"
 
-type ToasterProps = React.ComponentProps<typeof Sonner>
+// Adicionamos a propriedade 'group' ao tipo
+type ToasterProps = React.ComponentProps<typeof Sonner> & {
+  group?: string;
+};
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  // Opcional: adapta o tema do toast ao tema do seu app
   const { theme = "system" } = useTheme()
 
   return (
@@ -24,6 +27,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
         },
       }}
+      // Passamos todas as props, incluindo a 'group'
       {...props}
     />
   )

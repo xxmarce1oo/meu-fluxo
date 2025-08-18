@@ -92,7 +92,7 @@ export default function ProjectCreationForm({ onProjectCreated }: ProjectCreatio
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" isLoading={isLoading}>
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? 'Salvando...' : 'Salvar'}
             </Button>
           </DialogFooter>

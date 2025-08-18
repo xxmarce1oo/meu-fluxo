@@ -3,14 +3,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderKanban, Landmark, LayoutDashboard, Settings } from "lucide-react"; // Adicionar Settings
+// Adicione o ícone 'GlassWater'
+import { FolderKanban, Landmark, LayoutDashboard, Settings, GlassWater } from "lucide-react"; 
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/projects", label: "Atividades", icon: FolderKanban },
   { href: "/financeiro", label: "Financeiro", icon: Landmark }, 
+  // Novo link para o módulo de Hábitos
+  { href: "/habitos", label: "Hábitos", icon: GlassWater },
   { href: "/settings", label: "Configurações", icon: Settings },
-  
 ];
 
 export default function Sidebar() {

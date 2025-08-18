@@ -107,7 +107,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" isLoading={isLoading}>
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </DialogFooter>
