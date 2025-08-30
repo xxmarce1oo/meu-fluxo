@@ -4,6 +4,15 @@ import { authOptions } from "@/lib/auth";
 import { kv } from "@vercel/kv";
 import { CreditCardData } from "@/types";
 
+// Tipo auxiliar para dados brutos do KV
+type RawCreditCardFromKV = Omit<CreditCardData, "creditLimit" | "dueDay" | "closingDay" | "isActive" | "createdAt"> & {
+  creditLimit: string;
+  dueDay: string;
+  closingDay: string;
+  isActive: string; // KV armazena booleans como 'true' ou 'false'
+  createdAt: string;
+};
+
 export async function getUserCreditCards(): Promise<CreditCardData[]> {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.email) {
@@ -19,9 +28,20 @@ export async function getUserCreditCards(): Promise<CreditCardData[]> {
 
   const pipeline = kv.pipeline();
   cardIds.forEach(id => pipeline.hgetall(`credit-card:${id}`));
-  const cards = await pipeline.exec<CreditCardData[]>();
+  const cardsFromKV = await pipeline.exec<RawCreditCardFromKV[]>();
 
-  return cards.filter(Boolean);
+  const cards = cardsFromKV
+    .filter((c): c is RawCreditCardFromKV => !!c)
+    .map((c): CreditCardData => ({
+      ...c,
+      creditLimit: parseFloat(c.creditLimit || "0"),
+      dueDay: parseInt(c.dueDay, 10),
+      closingDay: parseInt(c.closingDay, 10),
+      isActive: c.isActive === 'true', // Converte a string 'true' para booleano
+      createdAt: Number(c.createdAt),
+    }));
+
+  return cards;
 }
 
 export async function getActiveCreditCards(): Promise<CreditCardData[]> {
