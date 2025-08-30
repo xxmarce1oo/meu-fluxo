@@ -7,8 +7,6 @@ import { TransactionData } from "@/types";
 export async function getUserTransactions(): Promise<TransactionData[]> {
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.email) {
-    // Retorna um array vazio se o usuário não estiver logado, 
-    // em vez de lançar um erro, para proteger a rota sem quebrar a build.
     return [];
   }
   const userId = session.user.email;
@@ -21,8 +19,21 @@ export async function getUserTransactions(): Promise<TransactionData[]> {
 
   const pipeline = kv.pipeline();
   transactionIds.forEach(id => pipeline.hgetall(`transaction:${id}`));
-  const transactions = await pipeline.exec<TransactionData[]>();
+  
+  // Usamos <any[]> para permitir a manipulação dos tipos antes de retornar
+  const transactionsFromKV = await pipeline.exec<any[]>();
 
-  // Filtra quaisquer resultados nulos que possam ter vindo do pipeline
-  return transactions.filter(Boolean);
+  // Filtra nulos e converte os campos para os tipos corretos
+  const transactions = transactionsFromKV
+    .filter(Boolean)
+    .map((t): TransactionData => ({
+      ...t,
+      amount: parseFloat(t.amount || 0),
+      date: Number(t.date),
+      createdAt: Number(t.createdAt),
+      installments: t.installments ? Number(t.installments) : undefined,
+      currentInstallment: t.currentInstallment ? Number(t.currentInstallment) : undefined,
+    }));
+
+  return transactions;
 }
