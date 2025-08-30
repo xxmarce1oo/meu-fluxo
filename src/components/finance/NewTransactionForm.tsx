@@ -1,3 +1,4 @@
+// src/components/finance/NewTransactionForm.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -24,7 +25,7 @@ import {
 import { toast } from "sonner";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar"; // (adicione com: npx shadcn-ui@latest add calendar)
+import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { CreditCardData } from "@/types";
 
@@ -39,19 +40,30 @@ export default function NewTransactionForm() {
   const [category, setCategory] = useState("Gastos");
   const [paidBy, setPaidBy] = useState("");
   
-  // Novos estados baseados na planilha
   const [paymentMethod, setPaymentMethod] = useState<"credit" | "debit" | "pix" | "cash">("debit");
   const [installments, setInstallments] = useState(1);
   const [creditCard, setCreditCard] = useState("");
   const [availableCards, setAvailableCards] = useState<CreditCardData[]>([]);
   const [loadingCards, setLoadingCards] = useState(false);
 
-  // Buscar cartões disponíveis quando o dialog abrir
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && paymentMethod === 'credit') {
       fetchCreditCards();
     }
-  }, [isOpen]);
+  }, [isOpen, paymentMethod]);
+
+  // Quando o tipo muda para "receita", reseta os campos de despesa
+  useEffect(() => {
+    if (type === 'income') {
+      setPaymentMethod('pix'); // Define um padrão para receita
+      setCategory('Receita'); // Define categoria padrão
+      setInstallments(1);
+      setCreditCard("");
+    } else {
+      setPaymentMethod('debit'); // Volta para o padrão de despesa
+      setCategory('Gastos');
+    }
+  }, [type]);
 
   const fetchCreditCards = async () => {
     setLoadingCards(true);
@@ -68,11 +80,10 @@ export default function NewTransactionForm() {
     }
   };
 
-    const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsLoading(true);
 
-    // Converter o valor para número
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) {
         toast.error("Por favor, insira um valor válido.");
@@ -86,15 +97,14 @@ export default function NewTransactionForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           description,
-          amount: numericAmount, // Enviar como número
+          amount: numericAmount,
           type,
-          date: date.getTime(), // Enviar timestamp da data selecionada
+          date: date.getTime(),
           category,
-          paidBy,
-          // Novos campos
+          paidBy: type === 'expense' ? paidBy : undefined,
           paymentMethod,
-          installments: paymentMethod === 'credit' ? installments : undefined,
-          creditCard: paymentMethod === 'credit' ? creditCard : undefined,
+          installments: type === 'expense' && paymentMethod === 'credit' ? installments : undefined,
+          creditCard: type === 'expense' && paymentMethod === 'credit' ? creditCard : undefined,
         }),
       });
 
@@ -115,7 +125,7 @@ export default function NewTransactionForm() {
       setPaymentMethod("debit");
       setInstallments(1);
       setCreditCard("");
-      router.refresh(); // Essencial para que a página busque os novos dados
+      router.refresh();
 
     } catch (error) {
       console.error(error);
@@ -124,6 +134,7 @@ export default function NewTransactionForm() {
       setIsLoading(false);
     }
   };
+  
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -133,9 +144,7 @@ export default function NewTransactionForm() {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Adicionar Transação</DialogTitle>
-            <DialogDescription>
-              Registre uma nova despesa ou receita.
-            </DialogDescription>
+            <DialogDescription>Registre uma nova despesa ou receita.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
@@ -149,120 +158,83 @@ export default function NewTransactionForm() {
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="type" className="text-right">Tipo</Label>
               <Select onValueChange={(value: "expense" | "income") => setType(value)} defaultValue={type}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-
+                <SelectTrigger className="col-span-3"><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="expense">Despesa</SelectItem>
                   <SelectItem value="income">Receita</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-                  {/* NOVO CAMPO: Data */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="date" className="text-right">Data</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="col-span-3 justify-start font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(date, "dd/MM/yyyy")}
-                  </Button>
+                  <Button variant="outline" className="col-span-3 justify-start font-normal"><CalendarIcon className="mr-2 h-4 w-4" />{format(date, "dd/MM/yyyy")}</Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} initialFocus />
-                </PopoverContent>
+                <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} initialFocus /></PopoverContent>
               </Popover>
             </div>
 
-            {/* NOVO CAMPO: Categoria (equivalente a "Gastos" e "Revisão") */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="category" className="text-right">Categoria</Label>
-              <Select onValueChange={setCategory} defaultValue={category}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Gastos">Gastos</SelectItem>
-                  <SelectItem value="Revisão">Revisão</SelectItem>
-                  {/* Adicione outras categorias que desejar */}
-                  <SelectItem value="Lazer">Lazer</SelectItem>
-                  <SelectItem value="Moradia">Moradia</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* --- CAMPOS CONDICIONAIS PARA DESPESA --- */}
+            {type === 'expense' && (
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="category" className="text-right">Categoria</Label>
+                  <Select onValueChange={setCategory} value={category}>
+                    <SelectTrigger className="col-span-3"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Gastos">Gastos</SelectItem>
+                      <SelectItem value="Revisão">Revisão</SelectItem>
+                      <SelectItem value="Lazer">Lazer</SelectItem>
+                      <SelectItem value="Moradia">Moradia</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="paidBy" className="text-right">Pago por</Label>
+                  <Input id="paidBy" value={paidBy} onChange={(e) => setPaidBy(e.target.value)} className="col-span-3" placeholder="Ex: Lorena 2/3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="paymentMethod" className="text-right">Pagamento</Label>
+                  <Select onValueChange={(value: "credit" | "debit" | "pix" | "cash") => setPaymentMethod(value)} value={paymentMethod}>
+                    <SelectTrigger className="col-span-3"><SelectValue placeholder="Método de pagamento" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="debit">Débito</SelectItem>
+                      <SelectItem value="pix">PIX</SelectItem>
+                      <SelectItem value="credit">Crédito</SelectItem>
+                      <SelectItem value="cash">Dinheiro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* NOVO CAMPO: Pago Por (equivalente a "Pai") */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="paidBy" className="text-right">Pago por</Label>
-              <Input id="paidBy" value={paidBy} onChange={(e) => setPaidBy(e.target.value)} className="col-span-3" placeholder="Ex: Lorena 2/3" />
-            </div>
-
-            {/* NOVO CAMPO: Método de Pagamento */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="paymentMethod" className="text-right">Pagamento</Label>
-              <Select onValueChange={(value: "credit" | "debit" | "pix" | "cash") => setPaymentMethod(value)} defaultValue={paymentMethod}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Método de pagamento" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="debit">Débito</SelectItem>
-                  <SelectItem value="pix">PIX</SelectItem>
-                  <SelectItem value="credit">Crédito</SelectItem>
-                  <SelectItem value="cash">Dinheiro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* CAMPO CONDICIONAL: Cartão de Crédito (só aparece se for crédito) */}
-            {paymentMethod === 'credit' && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="creditCard" className="text-right">Cartão</Label>
-                <Select onValueChange={setCreditCard} value={creditCard}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder={loadingCards ? "Carregando..." : "Selecione um cartão"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableCards.length === 0 && !loadingCards ? (
-                      <SelectItem value="manual" disabled>
-                        Nenhum cartão cadastrado
-                      </SelectItem>
-                    ) : (
-                      availableCards.map(card => (
-                        <SelectItem key={card.id} value={card.name}>
-                          {card.name} ({card.bank}) - *{card.lastFourDigits}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            {/* CAMPO CONDICIONAL: Parcelas (só aparece se for crédito) */}
-            {paymentMethod === 'credit' && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="installments" className="text-right">Parcelas</Label>
-                <Select onValueChange={(value) => setInstallments(parseInt(value))} defaultValue={installments.toString()}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Número de parcelas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">À vista (1x)</SelectItem>
-                    {[...Array(11)].map((_, i) => (
-                      <SelectItem key={i + 2} value={(i + 2).toString()}>
-                        {i + 2}x
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                {paymentMethod === 'credit' && (
+                  <>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="creditCard" className="text-right">Cartão</Label>
+                      <Select onValueChange={setCreditCard} value={creditCard}>
+                        <SelectTrigger className="col-span-3"><SelectValue placeholder={loadingCards ? "Carregando..." : "Selecione um cartão"} /></SelectTrigger>
+                        <SelectContent>
+                          {availableCards.map(card => (<SelectItem key={card.id} value={card.name}>{card.name} ({card.bank}) - *{card.lastFourDigits}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="installments" className="text-right">Parcelas</Label>
+                      <Select onValueChange={(value) => setInstallments(parseInt(value))} value={installments.toString()}>
+                        <SelectTrigger className="col-span-3"><SelectValue placeholder="Número de parcelas" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">À vista (1x)</SelectItem>
+                          {[...Array(11)].map((_, i) => (<SelectItem key={i + 2} value={(i + 2).toString()}>{i + 2}x</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+              </>
             )}
           </div>
           <DialogFooter>
-            <Button type="submit" isLoading={isLoading}>
-              {isLoading ? 'Salvando...' : 'Salvar'}
-            </Button>
+            <Button type="submit" disabled={isLoading}>{isLoading ? 'Salvando...' : 'Salvar'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

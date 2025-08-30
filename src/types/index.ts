@@ -49,17 +49,17 @@ export interface TransactionData {
   id: string;
   userId: string;
   description: string;
-  amount: number; // Armazenaremos como um número
-  type: 'income' | 'expense'; // Receita ou Despesa
-  date: number; // Usaremos um timestamp para a data
+  amount: number;
+  type: 'income' | 'expense';
+  date: number; // Data da compra
+  invoiceDate: number; // << ADICIONE ESTA LINHA (Data em que a compra entra na fatura)
   createdAt: number;
-  category?: string; // Para "Gastos", "Revisão", etc.
+  category?: string;
   paidBy?: string;
-  // Novos campos baseados na planilha
-  paymentMethod: 'credit' | 'debit' | 'pix' | 'cash'; // Método de pagamento
-  installments?: number; // Número de parcelas (apenas para crédito)
-  currentInstallment?: number; // Parcela atual (apenas para crédito parcelado)
-  creditCard?: string; // Nome do cartão de crédito usado
+  paymentMethod: 'credit' | 'debit' | 'pix' | 'cash';
+  installments?: number;
+  currentInstallment?: number;
+  creditCard?: string;
 }
 
 // Interface para cartões de crédito

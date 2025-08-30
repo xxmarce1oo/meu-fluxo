@@ -1,4 +1,4 @@
-"use client"; // Cálculos com datas do mês corrente funcionam melhor no cliente
+"use client";
 
 import { TransactionData } from "@/types";
 import SummaryCard from "./SummaryCard";
@@ -22,9 +22,10 @@ export default function FinancialSummary({ transactions }: FinancialSummaryProps
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
-    // Filtra transações apenas para o mês e ano correntes
+    // Filtra transações cuja DATA DA FATURA pertence ao mês e ano correntes
     const monthlyTransactions = transactions.filter(t => {
-      const transactionDate = new Date(t.date);
+      // Usa a invoiceDate se existir, senão, a data da transação
+      const transactionDate = new Date(t.invoiceDate || t.date);
       return transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear;
     });
 

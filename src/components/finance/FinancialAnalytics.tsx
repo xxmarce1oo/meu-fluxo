@@ -1,4 +1,3 @@
-// src/components/finance/analytics/FinancialAnalytics.tsx
 "use client";
 
 import { useMemo } from 'react';
@@ -12,46 +11,48 @@ interface FinancialAnalyticsProps {
   transactions: TransactionData[];
 }
 
-// Cores para o gráfico de pizza
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF1943'];
 
 export default function FinancialAnalytics({ transactions }: FinancialAnalyticsProps) {
-  // Memoiza os cálculos para que não sejam refeitos a cada renderização
   const { expenseByCategory, monthlySummary } = useMemo(() => {
-    // 1. Processamento para o Gráfico de Pizza (Despesas por Categoria)
-    const expenseByCategory: { [key: string]: number } = {};
+    const expenseByCategoryMap: { [key: string]: number } = {};
     transactions
       .filter(t => t.type === 'expense')
       .forEach(t => {
         const category = t.category || 'Outros';
-        if (!expenseByCategory[category]) {
-          expenseByCategory[category] = 0;
+        if (!expenseByCategoryMap[category]) {
+          expenseByCategoryMap[category] = 0;
         }
-        expenseByCategory[category] += t.amount;
+        expenseByCategoryMap[category] += t.amount;
       });
     
-    const expenseData = Object.entries(expenseByCategory).map(([name, value]) => ({ name, value }));
+    const expenseData = Object.entries(expenseByCategoryMap).map(([name, value]) => ({ name, value }));
 
-    // 2. Processamento para o Gráfico de Barras (Receita vs. Despesa Mensal)
-    const monthlyData: { [key: string]: { income: number, expense: number } } = {};
+    const monthlyData: { [key: string]: { income: number, expense: number, date: Date } } = {};
     transactions.forEach(t => {
-      const month = format(new Date(t.date), 'MMM/yy', { locale: ptBR });
-      if (!monthlyData[month]) {
-        monthlyData[month] = { income: 0, expense: 0 };
+      // Usa a invoiceDate para agrupar, ou a data da compra como fallback
+      const effectiveDate = new Date(t.invoiceDate || t.date);
+      const monthKey = format(effectiveDate, 'yyyy-MM');
+      
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { income: 0, expense: 0, date: effectiveDate };
       }
-      monthlyData[month][t.type] += t.amount;
+      monthlyData[monthKey][t.type] += t.amount;
     });
 
-    const monthlySummary = Object.entries(monthlyData)
-      .map(([name, values]) => ({ name, ...values }))
-      .sort((a, b) => new Date(a.name).getTime() - new Date(b.name).getTime()); // Ordena por data
+    const monthlySummary = Object.values(monthlyData)
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .map(data => ({
+        name: format(data.date, 'MMM/yy', { locale: ptBR }),
+        income: data.income,
+        expense: data.expense,
+      }));
 
     return { expenseByCategory: expenseData, monthlySummary };
   }, [transactions]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-      {/* Card do Gráfico de Pizza */}
       <Card>
         <CardHeader>
           <CardTitle>Despesas por Categoria</CardTitle>
@@ -72,7 +73,6 @@ export default function FinancialAnalytics({ transactions }: FinancialAnalyticsP
         </CardContent>
       </Card>
       
-      {/* Card do Gráfico de Barras */}
       <Card>
         <CardHeader>
           <CardTitle>Fluxo de Caixa Mensal</CardTitle>
