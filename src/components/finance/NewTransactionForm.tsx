@@ -29,13 +29,18 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { CreditCardData } from "@/types";
 
-export default function NewTransactionForm() {
+// Interface para definir as propriedades que o componente aceita
+interface NewTransactionFormProps {
+  onTransactionCreated: () => void;
+}
+
+export default function NewTransactionForm({ onTransactionCreated }: NewTransactionFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"expense" | "income">("expense");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const router = useRouter(); // router não é mais necessário para refresh, mas pode ser útil para outras coisas
   const [date, setDate] = useState<Date>(new Date());
   const [category, setCategory] = useState("Gastos");
   const [paidBy, setPaidBy] = useState("");
@@ -52,15 +57,14 @@ export default function NewTransactionForm() {
     }
   }, [isOpen, paymentMethod]);
 
-  // Quando o tipo muda para "receita", reseta os campos de despesa
   useEffect(() => {
     if (type === 'income') {
-      setPaymentMethod('pix'); // Define um padrão para receita
-      setCategory('Receita'); // Define categoria padrão
+      setPaymentMethod('pix');
+      setCategory('Receita');
       setInstallments(1);
       setCreditCard("");
     } else {
-      setPaymentMethod('debit'); // Volta para o padrão de despesa
+      setPaymentMethod('debit');
       setCategory('Gastos');
     }
   }, [type]);
@@ -102,7 +106,7 @@ export default function NewTransactionForm() {
           date: date.getTime(),
           category,
           paidBy: type === 'expense' ? paidBy : undefined,
-          paymentMethod,
+          paymentMethod: type === 'expense' ? paymentMethod : 'pix', // Garante um valor padrão para receita
           installments: type === 'expense' && paymentMethod === 'credit' ? installments : undefined,
           creditCard: type === 'expense' && paymentMethod === 'credit' ? creditCard : undefined,
         }),
@@ -114,7 +118,10 @@ export default function NewTransactionForm() {
       }
 
       toast.success("Transação salva com sucesso!");
+      
+      onTransactionCreated(); // Chama a função para atualizar os dados na página pai
 
+      // Limpa o formulário
       setIsOpen(false);
       setDescription("");
       setAmount("");
@@ -125,7 +132,6 @@ export default function NewTransactionForm() {
       setPaymentMethod("debit");
       setInstallments(1);
       setCreditCard("");
-      router.refresh();
 
     } catch (error) {
       console.error(error);
@@ -175,7 +181,6 @@ export default function NewTransactionForm() {
               </Popover>
             </div>
 
-            {/* --- CAMPOS CONDICIONAIS PARA DESPESA --- */}
             {type === 'expense' && (
               <>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -211,7 +216,7 @@ export default function NewTransactionForm() {
                   <>
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label htmlFor="creditCard" className="text-right">Cartão</Label>
-                      <Select onValueChange={setCreditCard} value={creditCard}>
+                      <Select onValueChange={setCreditCard} value={creditCard} required>
                         <SelectTrigger className="col-span-3"><SelectValue placeholder={loadingCards ? "Carregando..." : "Selecione um cartão"} /></SelectTrigger>
                         <SelectContent>
                           {availableCards.map(card => (<SelectItem key={card.id} value={card.name}>{card.name} ({card.bank}) - *{card.lastFourDigits}</SelectItem>))}
